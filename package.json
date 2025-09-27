@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server/server.js",
     "seed": "node server/seeder.js"
+    "postinstall": "cd client && npm install && npm run build" 
   },
   "keywords": [],
   "author": "",
