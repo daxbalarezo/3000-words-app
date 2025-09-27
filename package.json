@@ -11,7 +11,7 @@
     // 1. Script que construye el frontend (cliente)
     "build-client": "cd client && npm install && npm run build", 
     
-    // 2. Se ejecuta AUTOMÁTICAMENTE antes de 'npm start'. Fuerza el build del cliente.
+    // 2. Se ejecuta AUTOMÁTICAMENTE antes de 'npm start'. Fuerza el build del cliente sii.
     "prestart": "npm run build-client", 
     
     // 3. Script que inicia el servidor Node/Express
