@@ -16,7 +16,7 @@ function FlashcardsPage() {
       try {
         setIsLoading(true);
         // Llamamos a la nueva ruta /pending
-        const response = await axios.get('http://localhost:5000/api/words/pending');
+        const response = await axios.get('/api/words/pending');
         // Barajamos las palabras para que no salgan siempre en el mismo orden
         const shuffledWords = response.data.sort(() => Math.random() - 0.5);
         setWords(shuffledWords);
