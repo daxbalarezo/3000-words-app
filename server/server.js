@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs'); // ← AGREGAR ESTA LÍNEA
 
 // =======================================================
 // 1. CARGA DE CONFIGURACIÓN
@@ -30,10 +31,14 @@ if (process.env.NODE_ENV === 'production') {
   
   const buildPath = path.join(__dirname, '..', 'client', 'dist');
   
+  // DEBUG: Verificar que la ruta existe
+  console.log('📁 Ruta de build:', buildPath);
+  console.log('📁 Existe index.html?', fs.existsSync(path.join(buildPath, 'index.html')));
+  
   // 3a. Servir archivos estáticos
   app.use(express.static(buildPath));
   
-  // 3b. ✅ CORRECCIÓN: Cambiar '*' por '/*'
+  // 3b. CORRECCIÓN: Usar '/*' en lugar de '*'
   app.get('/*', (req, res) => {
     res.sendFile(path.resolve(buildPath, 'index.html'));
   });

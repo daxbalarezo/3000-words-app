@@ -52,8 +52,26 @@ const updateWordStatus = async (req, res) => {
   }
 };
 
+// Agregar esta función al final del archivo, antes del module.exports
+
+const getLearnedCount = async (req, res) => {
+  try {
+    const learnedCount = await Word.countDocuments({ status: 'learned' });
+    const totalCount = await Word.countDocuments();
+    
+    res.json({
+      learned: learnedCount,
+      total: totalCount,
+      pending: totalCount - learnedCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getWords,
   getPendingWords,
   updateWordStatus,
+  getLearnedCount,
 };

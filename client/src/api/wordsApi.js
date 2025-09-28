@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = '/api/words';
+const isDevelopment = import.meta.env.MODE === 'development';
+const API_BASE = isDevelopment ? 'http://localhost:5000' : '';
+const API_URL = `${API_BASE}/api/words`;
 
 export const fetchWords = async (page = 1) => {
   try {
@@ -19,5 +21,15 @@ export const updateWordStatus = async (id, newStatus) => {
   } catch (error) {
     console.error('Error updating word status:', error);
     throw error;
+  }
+};
+
+export const getLearnedStats = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/stats/learned`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching learned stats:', error);
+    return { learned: 0, total: 0, pending: 0 };
   }
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchWords, updateWordStatus } from '../api/wordsApi';
+import { fetchWords, updateWordStatus, getLearnedStats } from '../api/wordsApi';
 
 const WordListPage = () => {
   const [words, setWords] = useState([]);
@@ -8,15 +8,27 @@ const WordListPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalWords, setTotalWords] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [stats, setStats] = useState({ learned: 0, total: 0, pending: 0 });
+
+  // EFFECT PARA CARGAR ESTADÍSTICAS
+  useEffect(() => {
+    const loadStats = async () => {
+      const statsData = await getLearnedStats();
+      setStats(statsData);
+    };
+    loadStats();
+  }, [refreshTrigger]);
 
   useEffect(() => {
     const loadWords = async () => {
       setIsLoading(true);
       const data = await fetchWords(currentPage);
       if (data) {
-        setWords(data.words);
+        setWords(data.words || []);
         setTotalPages(data.totalPages);
         setTotalWords(data.totalWords);
+      } else {
+        setWords([]);
       }
       setIsLoading(false);
     };
@@ -41,6 +53,28 @@ const WordListPage = () => {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <h1 className="text-3xl font-bold mb-4 text-center">Lista de Palabras</h1>
+      
+      {/* CONTADOR DE PROGRESO */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-blue-800 mb-2">Tu Progreso</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.learned}</div>
+              <div className="text-sm text-gray-600">Aprendidas</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              <div className="text-sm text-gray-600">Pendientes</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+              <div className="text-sm text-gray-600">Total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <p className="text-center text-gray-600 mb-6">Total: {totalWords} palabras</p>
       
       {/* Vista de Tabla para Escritorio */}
@@ -56,7 +90,7 @@ const WordListPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {words.map((word) => (
+            {words && words.map((word) => (
               <tr key={word._id}>
                 <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{word.word}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-700">{word.translation || '--'}</td>
@@ -77,7 +111,7 @@ const WordListPage = () => {
 
       {/* Vista de Tarjetas para Móvil */}
       <div className="md:hidden space-y-4">
-        {words.map(word => (
+        {words && words.map(word => (
           <div key={word._id} className="bg-white p-4 rounded-lg shadow">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-bold">{word.word}</h2>
@@ -95,8 +129,30 @@ const WordListPage = () => {
         ))}
       </div>
       
+      {/* NUEVO: SELECTOR DE PÁGINA RÁPIDA */}
+      <div className="flex justify-center items-center mt-6 gap-2">
+        <span className="text-gray-700">Ir a página:</span>
+        <input 
+          type="number" 
+          min="1" 
+          max={totalPages}
+          className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              const page = parseInt(e.target.value);
+              if (page >= 1 && page <= totalPages) {
+                setCurrentPage(page);
+                e.target.value = '';
+              }
+            }
+          }}
+          placeholder="..."
+        />
+        <span className="text-gray-600">de {totalPages}</span>
+      </div>
+
       {/* Controles de Paginación */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex justify-between items-center mt-4">
         <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md disabled:opacity-50">Anterior</button>
         <span className="text-gray-700">Página {currentPage} de {totalPages}</span>
         <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md disabled:opacity-50">Siguiente</button>
